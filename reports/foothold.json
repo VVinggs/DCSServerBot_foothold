@@ -1,0 +1,8 @@
+{
+  "color": "blue",
+  "elements": [
+    {
+      "class": "plugins.foothold.reports.FootholdStats"
+    }
+  ]
+}

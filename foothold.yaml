@@ -1,0 +1,4 @@
+DCS.dcs_serverrelease:
+  channel: 1122334455667788   # Replace with your actual Discord Channel ID
+  lua_file_name: "footholdSyria_Extended_0.1_vietnam.lua" # Replace with your actual Lua file name
+  update_interval: 120
