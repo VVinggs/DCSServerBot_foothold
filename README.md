@@ -17,7 +17,7 @@ DEFAULT:
   update_interval: 120        # interval in seconds when the embed should update (default = 120)
 
 DCS.dcs_serverrelease:
-  lua_file_name: "footholdSyria_Extended_0.1_vietnam.lua"
+  lua_file_name: "Foothold_Ranks.lua"
   channel: 1122334455667788      # channel where the stats are uploaded (WARNING: this channel will get its messages often cleared)
   update_interval: 120
 ```
