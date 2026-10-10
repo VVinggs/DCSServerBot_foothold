@@ -87,6 +87,7 @@ class FootholdStats(report.EmbedElement):
         sorted_players = sorted(normalized.items(), key=_sort_key, reverse=True)
 
         def _short_name(name: str) -> str:
+            name = name.split("|", maxsplit=1)[-1].strip() or name.strip()
             parts = name.split()
             if len(parts) <= 2:
                 return name
@@ -141,45 +142,71 @@ class FootholdStats(report.EmbedElement):
             except Exception:
                 return None
 
-        for player, stats in sorted_players[:max_players]:
+        def _has_nonzero_stat(stats: dict, candidates: list) -> bool:
+            value = _numeric_stat(stats, candidates)
+            return value is not None and value != 0
+
+        table1_stats = [candidates for _label, candidates in table1_cols[1:]]
+        table5_stats = [candidates for _label, candidates in table5_cols[:-1]]
+        takeoff_stats = ["Takeoffs", "takeoff", "Takeoff"]
+        landing_stats = ["Landings", "landings", "Landing"]
+
+        for player, stats in sorted_players:
             sname = _short_name(player)
-            row1 = [sname]
-            for _label, candidates in table1_cols[1:]:
-                val = _get_stat(stats, candidates)
-                row1.append(str(val if val is not None else "-"))
-            rows1.append(row1)
+            if len(rows1) < max_players and any(
+                _has_nonzero_stat(stats, candidates) for candidates in table1_stats
+            ):
+                row1 = [sname]
+                for _label, candidates in table1_cols[1:]:
+                    val = _get_stat(stats, candidates)
+                    row1.append(str(val if val is not None else "-"))
+                rows1.append(row1)
 
-            row2 = [sname]
-            for _label, candidates in table2_cols:
-                val = _get_stat(stats, candidates)
-                row2.append(str(val if val is not None else "-"))
-            rows2.append(row2)
+            if len(rows2) < max_players and any(
+                _has_nonzero_stat(stats, candidates) for _label, candidates in table2_cols
+            ):
+                row2 = [sname]
+                for _label, candidates in table2_cols:
+                    val = _get_stat(stats, candidates)
+                    row2.append(str(val if val is not None else "-"))
+                rows2.append(row2)
 
-            row3 = [sname]
-            for _label, candidates in table3_cols:
-                val = _get_stat(stats, candidates)
-                row3.append(str(val if val is not None else "-"))
-            rows3.append(row3)
+            if len(rows3) < max_players and any(
+                _has_nonzero_stat(stats, candidates) for _label, candidates in table3_cols
+            ):
+                row3 = [sname]
+                for _label, candidates in table3_cols:
+                    val = _get_stat(stats, candidates)
+                    row3.append(str(val if val is not None else "-"))
+                rows3.append(row3)
 
-            row4 = [sname]
-            for _label, candidates in table4_cols:
-                val = _get_stat(stats, candidates)
-                row4.append(str(val if val is not None else "-"))
-            rows4.append(row4)
+            if len(rows4) < max_players and any(
+                _has_nonzero_stat(stats, candidates) for _label, candidates in table4_cols
+            ):
+                row4 = [sname]
+                for _label, candidates in table4_cols:
+                    val = _get_stat(stats, candidates)
+                    row4.append(str(val if val is not None else "-"))
+                rows4.append(row4)
 
-            takeoffs = _numeric_stat(stats, ["Takeoffs", "takeoff", "Takeoff"])
-            landings = _numeric_stat(stats, ["Landings", "landings", "Landing"])
+            takeoffs = _numeric_stat(stats, takeoff_stats)
+            landings = _numeric_stat(stats, landing_stats)
             if takeoffs is not None and landings is not None and landings != 0:
                 ratio = f"{takeoffs / landings:.2f}"
             else:
                 ratio = "-"
 
-            row5 = [sname]
-            for _label, candidates in table5_cols[:-1]:
-                val = _get_stat(stats, candidates)
-                row5.append(str(val if val is not None else "-"))
-            row5.append(ratio)
-            rows5.append(row5)
+            if len(rows5) < max_players and (
+                any(_has_nonzero_stat(stats, candidates) for candidates in table5_stats)
+                or _has_nonzero_stat(stats, takeoff_stats)
+                or _has_nonzero_stat(stats, landing_stats)
+            ):
+                row5 = [sname]
+                for _label, candidates in table5_cols[:-1]:
+                    val = _get_stat(stats, candidates)
+                    row5.append(str(val if val is not None else "-"))
+                row5.append(ratio)
+                rows5.append(row5)
 
         if not rows1:
             self.embed.description = "No stats available."

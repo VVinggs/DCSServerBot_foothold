@@ -420,8 +420,16 @@ def parse_lua_stats(lua_str: str) -> dict:
                 logger.warning("parse_lua_stats: fallback parser failed for players block: %s", e2)
                 return stats
 
-    for player_name, player_data in (rank_data.get('players') or {}).items():
+    for player_index, player_data in (rank_data.get('players') or {}).items():
         if isinstance(player_data, dict):
+            player_name = player_data.get('name')
+            if not isinstance(player_name, str) or not player_name.strip():
+                # Older saves used the player's name as the table key. Newer
+                # saves use an account index and store the display name in the
+                # player record; don't expose an unidentified account index.
+                player_name = str(player_index)
+                if re.fullmatch(r'[0-9a-fA-F]{32}', player_name):
+                    continue
             stats[player_name] = _flatten_rank_save_player(player_data)
     return stats
 
